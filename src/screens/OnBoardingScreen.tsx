@@ -17,16 +17,15 @@ const OnboardingScreen: React.FC = () => {
   const gradientPosition = useSharedValue(0);
   const handleContinue = () => {
     console.log('animating');
-    gradientPosition.value = withSequence(
-      withTiming(1, { duration: 750 }), // Fill screen
-      withTiming(2, { duration: 750 })  // Move to top
-    );
+    gradientPosition.value = withTiming(2, { 
+      duration: 1500
+    });
   };
   const animatedGradientStyle = useAnimatedStyle(() => {
     const translateY = interpolate(
       gradientPosition.value,
       [0, 1, 2],
-      [screenHeight * 0.6, 0, -screenHeight * 0.7] // bottom -> full -> top
+      [screenHeight * 0.4, 0, -screenHeight * 0.7]
     );
     
     return {
@@ -42,8 +41,8 @@ const OnboardingScreen: React.FC = () => {
         style={[
           {
             position: 'absolute',
-            width: screenWidth * 2,
-            height: screenWidth * 2,
+            width: screenWidth * 8,
+            height: screenWidth * 8,
             left: -screenWidth * 0.5,
             zIndex: 1,
           },
@@ -68,9 +67,9 @@ const OnboardingScreen: React.FC = () => {
         
         <Ellipse
           cx={screenWidth}
-          cy={screenWidth}
-          rx={screenWidth}
-          ry={screenWidth}
+          cy={screenWidth * 1.5}
+          rx={screenWidth * 1.5}
+          ry={screenWidth * 1.5}
           fill="url(#radialGradient)"
         />
       </AnimatedSvg>
