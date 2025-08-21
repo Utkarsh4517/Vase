@@ -6,26 +6,30 @@ import Animated, {
   useAnimatedStyle, 
   withTiming, 
   interpolate,
-  withSequence,
-  withRepeat,
-  withDelay,
-  runOnJS
 } from 'react-native-reanimated';
 import Svg, { Defs, RadialGradient, Stop, Ellipse } from 'react-native-svg';
-import AnimatedCyclingCategories from '../components/Onboarding/AnimatedCyclingCategories';
-
+import { VaseBlueLogo, VaseDarkLogo } from '../components/CustomSvgs';
 const { height: screenHeight, width: screenWidth } = Dimensions.get('window');
-
 const OnboardingScreen: React.FC = () => {
   const { completeOnboarding } = useAppContext();
   const gradientPosition = useSharedValue(0);
-  
+  const logoOpacity = useSharedValue(0);
   const [gradientType, setGradientType] = useState<'blue' | 'orange' | 'purple'>('blue');
   const [step, setStep] = useState(0);
-  
+  useEffect(() => {
+    if (step === 0) {
+      logoOpacity.value = withTiming(1, { duration: 800 });
+    }
+  }, []);
   const handleContinue = () => {
     console.log('animating');
-    setStep(1)
+    logoOpacity.value = withTiming(0, { duration: 500 });
+    setTimeout(() => {
+      setStep(1)
+      gradientPosition.value = withTiming(2, { 
+        duration: 1500
+      });
+    }, 500);
     gradientPosition.value = withTiming(2, { 
       duration: 1500
     });
@@ -48,6 +52,12 @@ const OnboardingScreen: React.FC = () => {
     
     return {
       transform: [{ translateY }],
+    };
+  });
+
+  const animatedLogoStyle = useAnimatedStyle(() => {
+    return {
+      opacity: logoOpacity.value,
     };
   });
 
@@ -126,7 +136,19 @@ const OnboardingScreen: React.FC = () => {
         />
       </AnimatedSvg>
       
-      {step === 0 && <AnimatedCyclingCategories />}
+      {step === 0 && (
+        <Animated.View 
+          className="absolute top-60 left-0 right-0 items-center"
+          style={[{ zIndex: 30 }, animatedLogoStyle]}
+        >
+          <View className="rounded-xl overflow-hidden">
+            <VaseBlueLogo width={80} height={80} />
+          </View>
+          <Text className="text-[#303030] font-bold text-4xl mt-3 text-center">
+            Your Crypto{"\n"}Piggy
+          </Text>
+        </Animated.View>
+      )}
       
       <View 
         className="absolute bottom-20 left-0 right-0 px-6 space-y-4"
