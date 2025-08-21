@@ -6,7 +6,7 @@ import { FeatureStepProps } from '../../types/onboarding.types';
 const features = {
   1: {
     title: 'Daily Deposits',
-    description: 'Add a set amount of crypto daily with automatic conversion.\nWatch your savings grow automatically, and never miss a day of building your future.',
+    description: 'Add a set amount of crypto daily with automatic conversion. Watch your savings grow automatically, and never miss a day of building your future.',
     others: [
       { title: 'Smart Locks', step: 2, gradient: 'orange' as const, size: 'text-2xl' },
       { title: 'Reach Goals', step: 3, gradient: 'purple' as const, size: 'text-xl' }
@@ -14,7 +14,7 @@ const features = {
   },
   2: {
     title: 'Smart Locks',
-    description: 'Set custom unlock conditions for your savings.\nTime-based locks, goal amounts, or special dates - you decide when to access your crypto.',
+    description: 'Set custom unlock conditions for your savings. Time-based locks, goal amounts, or special dates - you decide when to access your crypto.',
     others: [
       { title: 'Daily Deposits', step: 1, gradient: 'blue' as const, size: 'text-2xl' },
       { title: 'Reach Goals', step: 3, gradient: 'purple' as const, size: 'text-2xl' }
@@ -22,7 +22,7 @@ const features = {
   },
   3: {
     title: 'Reach Goals',
-    description: 'Track your progress and celebrate milestones.\nSet savings targets, monitor growth, and unlock achievements as you build your crypto wealth.',
+    description: 'Track your progress and celebrate milestones. Set savings targets, monitor growth, and unlock achievements as you build your crypto wealth.',
     others: [
       { title: 'Daily Deposits', step: 1, gradient: 'blue' as const, size: 'text-xl' },
       { title: 'Smart Locks', step: 2, gradient: 'orange' as const, size: 'text-2xl' }
