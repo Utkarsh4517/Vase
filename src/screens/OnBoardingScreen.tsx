@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Text, TouchableOpacity, View, Dimensions } from 'react-native';
 import { useAppContext } from '../contexts/AppContext';
 import Animated, { 
@@ -6,9 +6,13 @@ import Animated, {
   useAnimatedStyle, 
   withTiming, 
   interpolate,
-  withSequence
+  withSequence,
+  withRepeat,
+  withDelay,
+  runOnJS
 } from 'react-native-reanimated';
 import Svg, { Defs, RadialGradient, Stop, Ellipse } from 'react-native-svg';
+import AnimatedCyclingCategories from '../components/Onboarding/AnimatedCyclingCategories';
 
 const { height: screenHeight, width: screenWidth } = Dimensions.get('window');
 
@@ -17,9 +21,11 @@ const OnboardingScreen: React.FC = () => {
   const gradientPosition = useSharedValue(0);
   
   const [gradientType, setGradientType] = useState<'blue' | 'orange' | 'purple'>('blue');
+  const [step, setStep] = useState(0);
   
   const handleContinue = () => {
     console.log('animating');
+    setStep(1)
     gradientPosition.value = withTiming(2, { 
       duration: 1500
     });
@@ -120,6 +126,8 @@ const OnboardingScreen: React.FC = () => {
         />
       </AnimatedSvg>
       
+      {step === 0 && <AnimatedCyclingCategories />}
+      
       <View 
         className="absolute bottom-20 left-0 right-0 px-6 space-y-4"
         style={{ zIndex: 20 }}
@@ -129,15 +137,6 @@ const OnboardingScreen: React.FC = () => {
           className="bg-white rounded-full py-4 items-center shadow-lg"
         >
           <Text className="text-black font-semibold text-lg">Continue</Text>
-        </TouchableOpacity>
-        
-        <TouchableOpacity
-          onPress={cycleGradientColors}
-          className="bg-white rounded-full py-4 items-center shadow-lg"
-        >
-          <Text className="text-black font-semibold text-lg">
-            {getButtonText()}
-          </Text>
         </TouchableOpacity>
       </View>
     </View>
