@@ -137,4 +137,47 @@ function VaseBlueLogo(props: any) {
   )
 }
 
-export  {VaseLogo, VaseDarkLogo, VaseBlueLogo}
+function VaseWhiteLogo(props: any) {
+  const borderRadius = 100;
+  return (
+    <Svg
+      width={582}
+      height={582}
+      viewBox="0 0 582 582"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <G filter="url(#filter0_di_11_22)">
+        <Rect
+          x={21}
+          y={17}
+          width={500}
+          height={500}
+          rx={borderRadius}
+          ry={borderRadius}
+          fill="#fff"
+        />
+        <Path
+          d="M253.2 384.5c-20.2 0-34.5-2.8-42.9-8.4-8.4-5.8-12.6-15.2-12.6-28.2v-31.2c.2-8.6.3-16.6.3-24 0-11.4-.4-22.9-1.2-34.5-.8-11.6-2.4-22.7-4.8-33.3-2.4-10.6-6-20.2-10.8-28.8-4.8-8.6-11.2-15.6-19.2-21 13.6-10.4 29.2-15.6 46.8-15.6 12.2 0 21.9 3.5 29.1 10.5 7.2 7 12.6 16.4 16.2 28.2 3.6 11.6 5.9 24.5 6.9 38.7 1.2 14 1.8 28.1 1.8 42.3 0 9.2-.2 18.1-.6 26.7-.2 8.6-.3 16.5-.3 23.7h7.8c4.6-10 9.5-21.3 14.7-33.9 5.2-12.6 10.1-25.4 14.7-38.4s8.3-25.3 11.1-36.9c3-11.6 4.5-21.3 4.5-29.1 0-3.4-.3-6.4-.9-9-.6-2.8-1.4-5.2-2.4-7.2 7.6-5.2 14.7-9.1 21.3-11.7 6.8-2.6 13.7-3.9 20.7-3.9 11 0 18.7 3.2 23.1 9.6 4.6 6.2 6.9 14.3 6.9 24.3 0 7.4-1.4 16.1-4.2 26.1-2.8 10-6.5 20.6-11.1 31.8-4.4 11.2-9.1 22.4-14.1 33.6-5 11-9.9 21.4-14.7 31.2-4.6 9.8-8.4 18.3-11.4 25.5l4.2 16.5c-5.6 4.6-12.7 8.9-21.3 12.9-8.4 4-17.6 7.2-27.6 9.6-9.8 2.6-19.8 3.9-30 3.9z"
+          fill="url(#paint0_linear_11_22)"
+        />
+      </G>
+      <Defs>
+        <LinearGradient
+          id="paint0_linear_11_22"
+          x1={464.5}
+          y1={-96.5}
+          x2={162}
+          y2={256}
+          gradientUnits="userSpaceOnUse"
+        >
+          <Stop offset={0.08} stopOpacity={0.9} />
+          <Stop offset={1} stopColor="#171717" stopOpacity={0.9} />
+        </LinearGradient>
+      </Defs>
+    </Svg>
+  )
+}
+
+export  {VaseLogo, VaseDarkLogo, VaseBlueLogo, VaseWhiteLogo}

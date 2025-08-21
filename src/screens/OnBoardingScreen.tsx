@@ -8,7 +8,7 @@ import Animated, {
   interpolate,
 } from 'react-native-reanimated';
 import Svg, { Defs, RadialGradient, Stop, Ellipse } from 'react-native-svg';
-import { VaseBlueLogo, VaseDarkLogo } from '../components/CustomSvgs';
+import { VaseBlueLogo, VaseDarkLogo, VaseLogo, VaseWhiteLogo } from '../components/CustomSvgs';
 const { height: screenHeight, width: screenWidth } = Dimensions.get('window');
 const OnboardingScreen: React.FC = () => {
   const { completeOnboarding } = useAppContext();
@@ -16,11 +16,13 @@ const OnboardingScreen: React.FC = () => {
   const logoOpacity = useSharedValue(0);
   const [gradientType, setGradientType] = useState<'blue' | 'orange' | 'purple'>('blue');
   const [step, setStep] = useState(0);
+
   useEffect(() => {
     if (step === 0) {
       logoOpacity.value = withTiming(1, { duration: 800 });
     }
   }, []);
+
   const handleContinue = () => {
     console.log('animating');
     logoOpacity.value = withTiming(0, { duration: 500 });
@@ -138,20 +140,38 @@ const OnboardingScreen: React.FC = () => {
       
       {step === 0 && (
         <Animated.View 
-          className="absolute top-60 left-0 right-0 items-center"
+          className="absolute top-60 left-10 right-0"
           style={[{ zIndex: 30 }, animatedLogoStyle]}
         >
-          <View className="rounded-xl overflow-hidden">
-            <VaseBlueLogo width={80} height={80} />
+        
+          <Text className="text-[#303030] font-bold text-4xl mt-3 ml-1">
+            Vase
+          </Text>
+          <Text className="text-[#666666] font-bold text-xl mt-0.5 ml-1">
+            The Crypto Piggy
+          </Text>
+        </Animated.View>
+      )}
+          {step === 0 && (
+        <Animated.View 
+          className="absolute bottom-40 left-10 right-0"
+          style={[{ zIndex: 30 }, animatedLogoStyle]}
+        >
+            <View className="rounded-4xl overflow-hidden">
+            <VaseWhiteLogo width={60} height={60} />
           </View>
-          <Text className="text-[#303030] font-bold text-4xl mt-3 text-center">
-            Your Crypto{"\n"}Piggy
+          <Text className="text-[#fff] font-semibold mt-4 text-4xl ml-1">
+            Save crypto,{"\n"}regularly
+          </Text>
+          <Text className="text-[#fff] opacity-70 font-regular mt-4 text-lg ml-1" style={{ lineHeight: 15 }}>
+            Choose when to unlock{"\n"}
+            your savings and reach your targets!
           </Text>
         </Animated.View>
       )}
       
       <View 
-        className="absolute bottom-20 left-0 right-0 px-6 space-y-4"
+        className="absolute bottom-10 left-0 right-0 px-6 space-y-4"
         style={{ zIndex: 20 }}
       >
         <TouchableOpacity
