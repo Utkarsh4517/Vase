@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const ONBOARDING_KEY = 'hasVaseCompletedOnboarding';
-const AUTH_KEY = 'isVaseAuthenticated';
+const ONBOARDING_KEY = '_hasVaseCompletedOnboarding';
+const AUTH_KEY = '_isVaseAuthenticated';
 
 export class StorageService {
   static async setOnboardingCompleted(
