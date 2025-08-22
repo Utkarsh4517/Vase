@@ -1,7 +1,20 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, TextInput, ScrollView, Platform, Modal } from 'react-native';
+import { 
+  View, 
+  Text, 
+  TouchableOpacity, 
+  TextInput, 
+  ScrollView, 
+  Platform, 
+  Modal, 
+  Alert,
+  ActivityIndicator
+} from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { Keypair } from '@solana/web3.js';
 import { useAppContext } from '../contexts/AppContext';
+import { StorageService, type UserPreferences } from '../utils/storage';
+import { Buffer } from 'buffer';
 
 type UnlockType = 'date' | 'amount';
 
@@ -11,6 +24,7 @@ export default function AuthScreen() {
   const [unlockAmount, setUnlockAmount] = useState<string>('');
   const [unlockDate, setUnlockDate] = useState<Date | undefined>();
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [isCreatingWallet, setIsCreatingWallet] = useState(false);
 
   const handleUnlockTypeChange = (type: UnlockType) => {
     setSelectedUnlockType(type);
@@ -43,14 +57,54 @@ export default function AuthScreen() {
     setShowDatePicker(true);
   };
 
-  const handleCreateWallet = () => {
-    const preferences = {
-      unlockType: selectedUnlockType,
-      unlockDate,
-      unlockAmount: unlockAmount ? parseFloat(unlockAmount) : undefined,
-    };
-    console.log('User preferences:', preferences);
-    // authenticate();
+  const createSolanaWallet = async (): Promise<{ publicKey: string; privateKey: string } | null> => {
+    try {
+      const keypair = Keypair.generate();
+      return {
+        publicKey: keypair.publicKey.toString(),
+        privateKey: Buffer.from(keypair.secretKey).toString('base64')
+      };
+    } catch (error) {
+      console.error('Error creating Solana wallet:', error);
+      return null;
+    }
+  };
+
+  const handleCreateWallet = async () => {
+    if (!isValid() || isCreatingWallet) return;
+
+    setIsCreatingWallet(true);
+
+    try {
+      const preferences: UserPreferences = {
+        unlockType: selectedUnlockType!,
+        unlockDate,
+        unlockAmount: unlockAmount ? parseFloat(unlockAmount) : undefined,
+      };
+
+      console.log('User preferences:', preferences);
+      const wallet = await createSolanaWallet();
+      if (!wallet) {
+        Alert.alert('Error', 'Failed to create wallet. Please try again.');
+        return;
+      }
+      await StorageService.setUserPreferences(preferences);
+      await StorageService.setWalletPublicKey(wallet.publicKey);
+      await StorageService.setWalletPrivateKey(wallet.privateKey);
+      console.log('Wallet created successfully!');
+      console.log('Public Key:', wallet.publicKey);
+      console.log('Preferences stored successfully');
+      await new Promise<void>(resolve => setTimeout(resolve, 500));
+      authenticate();
+    } catch (error) {
+      console.error('Error in wallet creation process:', error);
+      Alert.alert(
+        'Error',
+        'Failed to create and store wallet. Please try again.'
+      );
+    } finally {
+      setIsCreatingWallet(false);
+    }
   };
 
   const isValid = () => {
@@ -98,11 +152,12 @@ export default function AuthScreen() {
             <View className="gap-y-4">
               <TouchableOpacity
                 onPress={() => handleUnlockTypeChange('date')}
+                disabled={isCreatingWallet}
                 className={`p-6 rounded-3xl border ${
                   selectedUnlockType === 'date'
                     ? 'border-0 bg-[#335cff]'
                     : 'border-gray-200 bg-white'
-                }`}
+                } ${isCreatingWallet ? 'opacity-50' : ''}`}
                 style={{
                   shadowColor: '#000',
                   shadowOffset: { width: 0, height: 4 },
@@ -124,17 +179,17 @@ export default function AuthScreen() {
                       Set a specific date when your funds become available
                     </Text>
                   </View>
-                 
                 </View>
               </TouchableOpacity>
 
               <TouchableOpacity
                 onPress={() => handleUnlockTypeChange('amount')}
+                disabled={isCreatingWallet}
                 className={`p-6 rounded-3xl border ${
                   selectedUnlockType === 'amount'
                     ? 'border-0 bg-[#335cff]'
                     : 'border-gray-200 bg-white'
-                }`}
+                } ${isCreatingWallet ? 'opacity-50' : ''}`}
                 style={{
                   shadowColor: '#000',
                   shadowOffset: { width: 0, height: 4 },
@@ -156,7 +211,6 @@ export default function AuthScreen() {
                       Unlock when your savings reach a target amount
                     </Text>
                   </View>
-                 
                 </View>
               </TouchableOpacity>
             </View>
@@ -166,7 +220,10 @@ export default function AuthScreen() {
             <View className="space-y-6">
               <TouchableOpacity
                 onPress={openDatePicker}
-                className="border-2 border-gray-200 rounded-3xl px-6 py-6 bg-white"
+                disabled={isCreatingWallet}
+                className={`border-2 border-gray-200 rounded-3xl px-6 py-6 bg-white ${
+                  isCreatingWallet ? 'opacity-50' : ''
+                }`}
                 style={{
                   shadowColor: '#000',
                   shadowOffset: { width: 0, height: 2 },
@@ -230,7 +287,10 @@ export default function AuthScreen() {
 
           {selectedUnlockType === 'amount' && (
             <View className="space-y-6">
-              <View className="border-2 border-gray-200 rounded-3xl px-6 py-6 bg-white"
+              <View 
+                className={`border-2 border-gray-200 rounded-3xl px-6 py-6 bg-white ${
+                  isCreatingWallet ? 'opacity-50' : ''
+                }`}
                 style={{
                   shadowColor: '#000',
                   shadowOffset: { width: 0, height: 2 },
@@ -250,6 +310,7 @@ export default function AuthScreen() {
                       onChangeText={handleAmountChange}
                       placeholder="0.00"
                       keyboardType="numeric"
+                      editable={!isCreatingWallet}
                       className="flex-1 text-3xl font-bold text-[#303030]"
                       placeholderTextColor="#D1D5DB"
                     />
@@ -273,25 +334,32 @@ export default function AuthScreen() {
       <View className="absolute bottom-10 left-0 right-0 px-6">
         <TouchableOpacity
           onPress={handleCreateWallet}
-          disabled={!isValid()}
-          className={`rounded-full py-5 items-center ${
-            !isValid() ? 'opacity-40' : ''
+          disabled={!isValid() || isCreatingWallet}
+          className={`rounded-full py-5 items-center flex-row justify-center ${
+            !isValid() || isCreatingWallet ? 'opacity-40' : ''
           }`}
           style={{ 
             backgroundColor: '#000',
             shadowColor: '#000',
             shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: isValid() ? 0.25 : 0.1,
+            shadowOpacity: isValid() && !isCreatingWallet ? 0.25 : 0.1,
             shadowRadius: 12,
             elevation: 6,
           }}
         >
+          {isCreatingWallet && (
+            <ActivityIndicator 
+              size="small" 
+              color="white" 
+              style={{ marginRight: 8 }}
+            />
+          )}
           <Text className="text-white font-medium text-lg tracking-wide">
-            Create Wallet
+            {isCreatingWallet ? 'Creating Wallet...' : 'Create Wallet'}
           </Text>
         </TouchableOpacity>
         
-        {!isValid() && (
+        {!isValid() && !isCreatingWallet && (
           <Text className="text-center text-gray-400 text-sm mt-3 font-light">
             Please configure your unlock preference to continue
           </Text>
