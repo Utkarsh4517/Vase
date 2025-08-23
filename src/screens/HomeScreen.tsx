@@ -1,18 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { ScrollView, Text, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { StackNavigationProp } from '@react-navigation/stack';
 import { StorageService, UserPreferences } from '../utils/storage';
+import { MainTabParamList } from '../types/navigation';
 import BalanceCard from '../components/BalanceCard';
 import LockProgressCard from '../components/LockProgressCard';
 
+type HomeScreenNavigationProp = StackNavigationProp<MainTabParamList, 'Home'>;
+
 export default function HomeScreen() {
+  const navigation = useNavigation<HomeScreenNavigationProp>();
   const [isBalanceVisible, setIsBalanceVisible] = useState(true);
   const [userPreferences, setUserPreferences] = useState<UserPreferences | null>(null);
   const [progress, setProgress] = useState(0);
+  const [publicKey, setPublicKey] = useState<string | null>(null);
   // fake balance
   const currentBalance = 5.78;
 
   useEffect(() => {
     loadUserPreferences();
+    loadPublicKey();
   }, []);
 
   useEffect(() => {
@@ -27,6 +35,15 @@ export default function HomeScreen() {
       setUserPreferences(preferences);
     } catch (error) {
       console.error('Error loading user preferences:', error);
+    }
+  };
+
+  const loadPublicKey = async () => {
+    try {
+      const key = await StorageService.getWalletPublicKey();
+      setPublicKey(key);
+    } catch (error) {
+      console.error('Error loading public key:', error);
     }
   };
 
@@ -55,15 +72,15 @@ export default function HomeScreen() {
   };
 
   const handleDepositPress = () => {
-    console.log('Deposit pressed');
+    navigation.navigate('Deposit', { publicKey });
   };
 
   const handleHoldingsPress = () => {
-    console.log('Holdings pressed');
+    navigation.navigate('Holdings');
   };
 
   const handleUnlockPress = () => {
-    console.log('Unlock pressed');
+    navigation.navigate('Withdraw');
   };
 
   return (
