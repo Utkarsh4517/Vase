@@ -6,6 +6,7 @@ import type { RootStackParamList } from '../types/navigation';
 import OnboardingScreen from '../screens/OnBoardingScreen';
 import AuthNavigator from './AuthNavigator';
 import MainTabNavigator from './MainNavigator';
+import HomeScreen from '../screens/HomeScreen';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -27,7 +28,7 @@ export default function AppNavigator() {
       ): !isAuthenticated ? (
         <Stack.Screen name="AuthNavigator" component={AuthNavigator} />
       ): (
-        <Stack.Screen name="Main" component={MainTabNavigator} />
+        <Stack.Screen name="Main" component={HomeScreen} />
       )}
     </Stack.Navigator>
   );
