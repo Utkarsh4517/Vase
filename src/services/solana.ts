@@ -1,7 +1,8 @@
-import { Connection, PublicKey, clusterApiUrl, LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { Connection, PublicKey, LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { HELIUS_MAINNET_RPC_URL } from '@env';
 
-const DEVNET_RPC = clusterApiUrl('devnet');
-export const connection = new Connection(DEVNET_RPC, 'confirmed');
+const MAINNET_RPC = HELIUS_MAINNET_RPC_URL;
+export const connection = new Connection(MAINNET_RPC, 'confirmed');
 
 const TOKEN_PROGRAM_ID = new PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA');
 
@@ -37,7 +38,6 @@ export async function getSplTokenHoldings(ownerPubkey: string): Promise<SplToken
 }
 
 export async function getSolBalance(ownerPubkey: string): Promise<number> {
-  const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
   const lamports = await connection.getBalance(new PublicKey(ownerPubkey));
   return lamports / LAMPORTS_PER_SOL;
 }
