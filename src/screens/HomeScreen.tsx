@@ -236,20 +236,34 @@ export default function HomeScreen() {
               >
                 <CardIcon />
               </TouchableOpacity>
-              <Text className="text-[#666666] text-[11px] font-light">Transactions</Text>
+              <Text className="text-[#666666] text-[11px] font-light">Holdings</Text>
             </View>
             <View className="items-center">
               <TouchableOpacity 
-                className="w-12 h-12 bg-[#335cff] rounded-full items-center justify-center mb-3"
-                onPress={() => console.log('Withdraw pressed')}
+                className={`w-12 h-12 rounded-full items-center justify-center mb-3 ${
+                  (() => {
+                    if (!userPreferences) return 'bg-[#335cff]';
+                    
+                    if (userPreferences.unlockType === 'date' && userPreferences.unlockDate) {
+                      const now = new Date();
+                      const unlockDate = new Date(userPreferences.unlockDate);
+                      return now >= unlockDate ? 'bg-[#335cff]' : 'bg-[#aeaeae]';
+                    } else if (userPreferences.unlockType === 'amount' && userPreferences.unlockAmount) {
+                      return currentBalance >= userPreferences.unlockAmount ? 'bg-[#335cff]' : 'bg-[#aeaeae]';
+                    }
+                    
+                    return 'bg-[#335cff]';
+                  })()
+                }`}
+                onPress={() => console.log('Unlock pressed')}
               >
                 <DownArrowIcon />
               </TouchableOpacity>
-              <Text className="text-[#666666] text-[11px] font-light">Withdraw</Text>
+              <Text className="text-[#666666] text-[11px] font-light">Unlock</Text>
             </View>
           </View>
         </View>
-        <View className='bg-white rounded-3xl w-full px-6 mt-6 py-6 items-center justify-center'>
+        <View className='bg-white rounded-3xl h-[80%] w-full px-6 mt-6 py-6 items-center justify-center'>
           <CircularProgressBar 
             size={200} 
             strokeWidth={14} 
@@ -258,10 +272,22 @@ export default function HomeScreen() {
             <LockIcon size={120} color="#AEAEAE" />
           </CircularProgressBar>
           {userPreferences && (
-            <Text className="text-[#666666] text-sm mt-4 text-center">
+            <Text className="text-[#666666] text-sm mt-10 text-center">
               {userPreferences.unlockType === 'date' 
-                ? `${Math.round(progress)}% until unlock date`
-                : `${Math.round(progress)}% of $${userPreferences.unlockAmount} goal`
+                ? (() => {
+                    const now = new Date();
+                    const unlockDate = new Date(userPreferences.unlockDate!);
+                    const daysLeft = Math.ceil((unlockDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+                    return daysLeft > 0 
+                      ? `${daysLeft} day${daysLeft === 1 ? '' : 's'} left to unlock your funds`
+                      : 'Your funds are ready to unlock!';
+                  })()
+                : (() => {
+                    const remaining = userPreferences.unlockAmount! - currentBalance;
+                    return remaining > 0
+                      ? `You need $${remaining.toFixed(2)} more to unlock your funds`
+                      : 'Congratulations! You can unlock your funds now!';
+                  })()
               }
             </Text>
           )}
