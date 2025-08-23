@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ScrollView, Text, View, TouchableOpacity, Image } from 'react-native';
 import Svg, { Path, Circle, Rect } from 'react-native-svg';
+import { StorageService, UserPreferences } from '../utils/storage';
 
 
 const EyeIcon = ({ size = 16, color = "#AEAEAE" }) => (
@@ -98,8 +99,100 @@ const LockIcon = ({ size = 64, color = "#AEAEAE" }) => (
   </Svg>
 );
 
+// Circular Progress Bar component
+const CircularProgressBar = ({ 
+  size = 140, 
+  strokeWidth = 8, 
+  progress = 0, 
+  children 
+}: {
+  size?: number;
+  strokeWidth?: number;
+  progress: number;
+  children: React.ReactNode;
+}) => {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = radius * 2 * Math.PI;
+  const strokeDashoffset = circumference - (progress / 100) * circumference;
+
+  return (
+    <View className="items-center justify-center relative" style={{ width: size, height: size }}>
+      <Svg width={size} height={size} className="absolute">
+        <Circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke="#E5E5E5"
+          strokeWidth={strokeWidth}
+          fill="none"
+        />
+        <Circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          stroke="#335cff"
+          strokeWidth={strokeWidth}
+          fill="none"
+          strokeDasharray={circumference}
+          strokeDashoffset={strokeDashoffset}
+          strokeLinecap="round"
+          transform={`rotate(-90 ${size / 2} ${size / 2})`}
+        />
+      </Svg>
+      
+      <View className="absolute items-center justify-center" style={{ width: size, height: size }}>
+        {children}
+      </View>
+    </View>
+  );
+};
+
 export default function HomeScreen() {
   const [isBalanceVisible, setIsBalanceVisible] = useState(true);
+  const [userPreferences, setUserPreferences] = useState<UserPreferences | null>(null);
+  const [progress, setProgress] = useState(0);
+  
+  // fake balance
+  const currentBalance = 5.78;
+
+  useEffect(() => {
+    loadUserPreferences();
+  }, []);
+
+  useEffect(() => {
+    if (userPreferences) {
+      calculateProgress();
+    }
+  }, [userPreferences, currentBalance]);
+
+  const loadUserPreferences = async () => {
+    try {
+      const preferences = await StorageService.getUserPreferences();
+      setUserPreferences(preferences);
+    } catch (error) {
+      console.error('Error loading user preferences:', error);
+    }
+  };
+
+  const calculateProgress = () => {
+    if (!userPreferences) return;
+
+    if (userPreferences.unlockType === 'date' && userPreferences.unlockDate) {
+      const now = new Date();
+      const unlockDate = new Date(userPreferences.unlockDate);
+      const startDate = new Date();
+      startDate.setMonth(startDate.getMonth() - 1);
+      
+      const totalDuration = unlockDate.getTime() - startDate.getTime();
+      const elapsed = now.getTime() - startDate.getTime();
+      const progressPercentage = Math.min((elapsed / totalDuration) * 100, 100);
+      
+      setProgress(Math.max(0, progressPercentage));
+    } else if (userPreferences.unlockType === 'amount' && userPreferences.unlockAmount) {
+      const progressPercentage = (currentBalance / userPreferences.unlockAmount) * 100;
+      setProgress(Math.min(progressPercentage, 100));
+    }
+  };
 
   const toggleBalanceVisibility = () => {
     setIsBalanceVisible(!isBalanceVisible);
@@ -157,11 +250,23 @@ export default function HomeScreen() {
           </View>
         </View>
         <View className='bg-white rounded-3xl w-full px-6 mt-6 py-6 items-center justify-center'>
-          <LockIcon size={120} color="#AEAEAE" />
+          <CircularProgressBar 
+            size={200} 
+            strokeWidth={14} 
+            progress={progress}
+          >
+            <LockIcon size={120} color="#AEAEAE" />
+          </CircularProgressBar>
+          {userPreferences && (
+            <Text className="text-[#666666] text-sm mt-4 text-center">
+              {userPreferences.unlockType === 'date' 
+                ? `${Math.round(progress)}% until unlock date`
+                : `${Math.round(progress)}% of $${userPreferences.unlockAmount} goal`
+              }
+            </Text>
+          )}
         </View>
       </View>
-    
-
     </ScrollView>
   );
 }
