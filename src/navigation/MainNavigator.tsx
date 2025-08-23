@@ -28,7 +28,7 @@ export default function MainStackNavigator() {
         options={
           {
             presentation: "modal",
-            headerShown: false
+            headerShown: true
           }
         }
       />
