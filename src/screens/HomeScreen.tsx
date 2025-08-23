@@ -6,6 +6,7 @@ import { StorageService, UserPreferences } from '../utils/storage';
 import { MainTabParamList } from '../types/navigation';
 import BalanceCard from '../components/BalanceCard';
 import LockProgressCard from '../components/LockProgressCard';
+import { getPortfolioValue, PortfolioValue } from '../services/price';
 
 type HomeScreenNavigationProp = StackNavigationProp<MainTabParamList, 'Home'>;
 
@@ -15,10 +16,15 @@ export default function HomeScreen() {
   const [userPreferences, setUserPreferences] = useState<UserPreferences | null>(null);
   const [progress, setProgress] = useState(0);
   const [publicKey, setPublicKey] = useState<string | null>(null);
-  // fake balance
-  const currentBalance = 5.78;
-
+  const [portfolioValue, setPortfolioValue] = useState<PortfolioValue>({
+    totalUsdValue: 0,
+    solValue: 0,
+    splTokensValue: 0,
+    isLoading: true,
+    error: null,
+  });
   
+  const currentBalance = portfolioValue.totalUsdValue;
 
   useEffect(() => {
     loadUserPreferences();
@@ -30,6 +36,30 @@ export default function HomeScreen() {
       calculateProgress();
     }
   }, [userPreferences, currentBalance]);
+
+  useEffect(() => {
+    if (publicKey) {
+      loadPortfolioValue();
+    }
+  }, [publicKey]);
+
+  const loadPortfolioValue = async () => {
+    if (!publicKey) return;
+    
+    setPortfolioValue(prev => ({ ...prev, isLoading: true, error: null }));
+    
+    try {
+      const value = await getPortfolioValue(publicKey);
+      setPortfolioValue(value);
+    } catch (error) {
+      console.error('Error loading portfolio value:', error);
+      setPortfolioValue(prev => ({
+        ...prev,
+        isLoading: false,
+        error: 'Failed to load balance',
+      }));
+    }
+  };
 
   const loadUserPreferences = async () => {
     try {
@@ -110,6 +140,8 @@ export default function HomeScreen() {
           onDepositPress={handleDepositPress}
           onHoldingsPress={handleHoldingsPress}
           onUnlockPress={handleUnlockPress}
+          isLoading={portfolioValue.isLoading}
+          error={portfolioValue.error}
         />
         
         <LockProgressCard

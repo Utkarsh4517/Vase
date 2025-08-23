@@ -1,5 +1,5 @@
 import React from 'react';
-import { Text, View, TouchableOpacity } from 'react-native';
+import { Text, View, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { EyeIcon, PlusIcon, DownArrowIcon, CardIcon } from './CustomSvgs';
 import { UserPreferences } from '../utils/storage';
 
@@ -11,6 +11,8 @@ interface BalanceCardProps {
   onDepositPress: () => void;
   onHoldingsPress: () => void;
   onUnlockPress: () => void;
+  isLoading?: boolean;
+  error?: string | null;
 }
 
 const BalanceCard = ({
@@ -20,15 +22,10 @@ const BalanceCard = ({
   userPreferences,
   onDepositPress,
   onHoldingsPress,
-  onUnlockPress
+  onUnlockPress,
+  isLoading = false,
+  error = null,
 }: BalanceCardProps) => {
-  const formatBalance = (balance: number) => {
-    const [dollars, cents] = balance.toFixed(2).split('.');
-    return { dollars, cents };
-  };
-
-  const { dollars, cents } = formatBalance(currentBalance);
-
   const getUnlockButtonClass = () => {
     if (!userPreferences) return 'bg-[#335cff]';
     
@@ -43,14 +40,28 @@ const BalanceCard = ({
     return 'bg-[#335cff]';
   };
 
-  return (
-    <View className='bg-white w-full rounded-3xl p-6 items-center'>
-      <View className="flex-row items-center mb-3">
-        <Text className='font-light text-[#AEAEAE] mr-2'>Total Balance</Text>
-        <TouchableOpacity onPress={toggleBalanceVisibility}>
-          <EyeIcon />
-        </TouchableOpacity>
-      </View>
+  const renderBalance = () => {
+    if (isLoading) {
+      return (
+        <View className="flex-row items-center justify-center h-16 mb-6">
+          <ActivityIndicator size="large" color="#335cff" />
+        </View>
+      );
+    }
+
+    if (error) {
+      return (
+        <View className="items-center mb-6">
+          <Text className="text-red-500 font-medium mb-2">Unable to load balance</Text>
+          <Text className="text-[#AEAEAE] text-sm">Check your connection</Text>
+        </View>
+      );
+    }
+
+    const balanceText = currentBalance.toFixed(2);
+    const [dollars, cents] = balanceText.split('.');
+
+    return (
       <Text className='font-bold text-5xl mb-6'>
         {isBalanceVisible ? (
           <>
@@ -61,6 +72,20 @@ const BalanceCard = ({
           <Text className="text-[#AEAEAE]">****</Text>
         )}
       </Text>
+    );
+  };
+
+  return (
+    <View className='bg-white w-full rounded-3xl p-6 items-center'>
+      <View className="flex-row items-center mb-3">
+        <Text className='font-light text-[#AEAEAE] mr-2'>Total Balance</Text>
+        <TouchableOpacity onPress={toggleBalanceVisibility}>
+          <EyeIcon />
+        </TouchableOpacity>
+      </View>
+      
+      {renderBalance()}
+      
       <View className="flex-row justify-center gap-x-6 w-full">
         <View className="items-center">
           <TouchableOpacity 

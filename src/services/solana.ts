@@ -11,6 +11,8 @@ export interface SplTokenHolding {
   amount: number;
   decimals: number;
   tokenAccount: string;
+  usdPrice?: number; 
+  totalUsdValue?: number;
 }
 
 export async function getSplTokenHoldings(ownerPubkey: string): Promise<SplTokenHolding[]> {
