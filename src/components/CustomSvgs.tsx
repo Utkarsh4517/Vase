@@ -1,5 +1,5 @@
 import * as React from "react"
-import Svg, { Rect, Mask, Path, Defs, LinearGradient, Stop, G } from "react-native-svg"
+import Svg, { Rect, Mask, Path, Defs, LinearGradient, Stop, G, Circle } from "react-native-svg"
 
 function VaseLogo(props: any) {
   return (
@@ -180,4 +180,108 @@ function VaseWhiteLogo(props: any) {
   )
 }
 
-export  {VaseLogo, VaseDarkLogo, VaseBlueLogo, VaseWhiteLogo}
+function EyeIcon ({ size = 20, color = "#AEAEAE" }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M1 12C1 12 5 4 12 4C19 4 23 12 23 12C23 12 19 20 12 20C5 20 1 12 1 12Z"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Circle cx="12" cy="12" r="3" stroke={color} strokeWidth="2" />
+    </Svg>
+  )
+}
+
+function PlusIcon ({ size = 20, color = "white" }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M12 5V19M5 12H19"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  )
+}
+
+function DownArrowIcon ({ size = 20, color = "white" }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M12 5V19M19 12L12 19L5 12"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  )
+}
+function CardIcon ({ size = 20, color = "white" }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Rect 
+        x="2" 
+        y="6" 
+        width="20" 
+        height="12" 
+        rx="2" 
+        stroke={color} 
+        strokeWidth="2"
+        fill="none"
+      />
+      <Path
+        d="M2 10H22"
+        stroke={color}
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+    </Svg>
+  )
+}
+
+function LockIcon ({ size = 64, color = "#AEAEAE" }: any){
+  return (
+    <Svg width={size} height={size} viewBox="0 0 100 100" fill="none">
+      <Rect
+        x="15"
+        y="40"
+        width="70"
+        height="50"
+        rx="12"
+        ry="12"
+        fill={color}
+        stroke={color}
+        strokeWidth="3"
+      />
+      
+      <Path
+        d="M25 40 V22 C25 12.1 32.1 5 42 5 L58 5 C67.9 5 75 12.1 75 22 V40"
+        fill="none"
+        stroke={color}
+        strokeWidth="10"
+        strokeLinecap="round"
+      />
+      <Circle
+        cx="50"
+        cy="60"
+        r="6"
+        fill="white"
+      />
+      <Rect
+        x="47"
+        y="63"
+        width="6"
+        height="12"
+        fill="white"
+      />
+    </Svg>
+  )
+}
+
+export  {VaseLogo, VaseDarkLogo, VaseBlueLogo, VaseWhiteLogo, EyeIcon, LockIcon, CardIcon,DownArrowIcon,PlusIcon }

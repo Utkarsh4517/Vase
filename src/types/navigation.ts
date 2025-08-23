@@ -10,7 +10,8 @@ export type RootStackParamList = {
   
   export type MainTabParamList = {
     Home: undefined;
-    Profile: undefined;
-    Settings: undefined;
+    Deposit: undefined;
+    Holdings: undefined;
+    Withdraw: undefined
   };
   

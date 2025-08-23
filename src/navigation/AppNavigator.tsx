@@ -28,7 +28,7 @@ export default function AppNavigator() {
       ): !isAuthenticated ? (
         <Stack.Screen name="AuthNavigator" component={AuthNavigator} />
       ): (
-        <Stack.Screen name="Main" component={HomeScreen} />
+        <Stack.Screen name="Main" component={MainTabNavigator} />
       )}
     </Stack.Navigator>
   );

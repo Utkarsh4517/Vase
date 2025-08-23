@@ -1,65 +1,57 @@
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createStackNavigator } from '@react-navigation/stack';
 import { MainTabParamList } from '../types/navigation';
-import { Text, View } from 'react-native';
 import HomeScreen from '../screens/HomeScreen';
-import ProfileScreen from '../screens/ProfileScreen';
-import SettingsScreen from '../screens/SettingsScreen';
+import ProfileScreen from '../screens/DepositScreen';
+import SettingsScreen from '../screens/HoldingsScreen';
+import WithdrawScreen from '../screens/WithdrawScreen';
+import HoldingsScreen from '../screens/HoldingsScreen';
+import DepositScreen from '../screens/DepositScreen';
 
-const Tab = createBottomTabNavigator<MainTabParamList>();
+const Stack = createStackNavigator<MainTabParamList>();
 
-const TabIcon = ({ name, focused }: { name: string; focused: boolean }) => {
-  <View
-    className={`w-6 h-6 rounded-full ${focused ? 'bg-blue-500' : 'bg-gray-300'}`}
-  >
-    <Text
-      className={`text-center text-xs ${focused ? 'text-white' : 'text-gray-600'}`}
-    >
-      {name[0]}
-    </Text>
-  </View>;
-};
-
-export default function MainTabNavigator() {
+export default function MainStackNavigator() {
   return (
-    <Tab.Navigator
+    <Stack.Navigator
+      initialRouteName="Home"
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#3B82F6',
-        tabBarInactiveTintColor: '#6B7280',
-        tabBarStyle: {
-          paddingBottom: 8,
-          paddingTop: 8,
-          height: 80,
-        },
+        cardStyle: { backgroundColor: '#F5F5F7' },
       }}
     >
-      <Tab.Screen
+      <Stack.Screen
         name="Home"
         component={HomeScreen}
-        options={{
-          tabBarIcon: ({ focused }) => (
-            <TabIcon name="Home" focused={focused} />
-          ),
-        }}
       />
-      <Tab.Screen
-        name="Profile"
-        component={ProfileScreen}
-        options={{
-          tabBarIcon: ({ focused }) => (
-            <TabIcon name="Profile" focused={focused} />
-          ),
-        }}
+      <Stack.Screen
+        name="Deposit"
+        component={DepositScreen}
+        options={
+          {
+            presentation: "modal",
+            headerShown: false
+          }
+        }
       />
-      <Tab.Screen
-        name="Settings"
-        component={SettingsScreen}
-        options={{
-          tabBarIcon: ({ focused }) => (
-            <TabIcon name="Settings" focused={focused} />
-          ),
-        }}
+      <Stack.Screen
+        name="Holdings"
+        component={HoldingsScreen}
+        options={
+          {
+            presentation: "modal",
+            headerShown: false
+          }
+        }
       />
-    </Tab.Navigator>
+      <Stack.Screen
+        name="Withdraw"
+        component={WithdrawScreen}
+        options={
+          {
+            presentation: "modal",
+            headerShown: false
+          }
+        }
+      />
+    </Stack.Navigator>
   );
 }
