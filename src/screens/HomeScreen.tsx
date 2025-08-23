@@ -18,6 +18,8 @@ export default function HomeScreen() {
   // fake balance
   const currentBalance = 5.78;
 
+  
+
   useEffect(() => {
     loadUserPreferences();
     loadPublicKey();
@@ -37,6 +39,16 @@ export default function HomeScreen() {
       console.error('Error loading user preferences:', error);
     }
   };
+
+  const isWalletUnlocked = () => {
+    if (userPreferences?.unlockType === 'date' && userPreferences?.unlockDate) {
+      const now = new Date();
+      const unlockDate = new Date(userPreferences?.unlockDate);
+      return now >= unlockDate ? true : false;
+    } else if (userPreferences?.unlockType === 'amount' && userPreferences?.unlockAmount) {
+      return currentBalance >= userPreferences.unlockAmount ? true : false;
+    }
+  }
 
   const loadPublicKey = async () => {
     try {
@@ -80,7 +92,9 @@ export default function HomeScreen() {
   };
 
   const handleUnlockPress = () => {
-    navigation.navigate('Withdraw');
+    if(isWalletUnlocked()) {
+      navigation.navigate('Withdraw');
+    }
   };
 
   return (

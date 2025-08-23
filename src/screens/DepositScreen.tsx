@@ -24,6 +24,7 @@ export default function DepositScreen({ route }: DepositScreenProps) {
     }
   };
 
+
   return (
     <View className="flex-1 bg-[#f5f5f7]">
       <View className="flex-1 items-center justify-center px-6">
