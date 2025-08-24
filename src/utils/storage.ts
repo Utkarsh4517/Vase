@@ -89,4 +89,15 @@ export class StorageService {
     await AsyncStorage.removeItem(USER_PREFERENCES_KEY);
     await Keychain.resetInternetCredentials({server: WALLET_PRIVATE_KEY_SERVICE});
   }
+
+  static async resetApp(): Promise<void> {
+    // Clear all storage data
+    await AsyncStorage.removeItem(ONBOARDING_KEY);
+    await AsyncStorage.removeItem(AUTH_KEY);
+    await AsyncStorage.removeItem(USER_PREFERENCES_KEY);
+    await AsyncStorage.removeItem(WALLET_PUBLIC_KEY);
+    
+    // Clear keychain data
+    await Keychain.resetInternetCredentials({server: WALLET_PRIVATE_KEY_SERVICE});
+  }
 }

@@ -7,6 +7,10 @@ const { withNativeWind } = require('nativewind/metro');
  *
  * @type {import('@react-native/metro-config').MetroConfig}
  */
-const config = mergeConfig(getDefaultConfig(__dirname), {});
+const config = mergeConfig(getDefaultConfig(__dirname), {
+  resolver: {
+    assetExts: ['bin', 'txt', 'jpg', 'png', 'json', 'lottie'],
+  },
+});
 
 module.exports = withNativeWind(config, { input: './global.css' });

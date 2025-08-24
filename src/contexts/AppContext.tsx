@@ -8,6 +8,7 @@ interface AppContextType {
   completeOnboarding: () => Promise<void>;
   authenticate: () => Promise<void>;
   logout: () => Promise<void>;
+  resetApp: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -60,6 +61,12 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     setIsAuthenticated(false);
   };
 
+  const resetApp = async () => {
+    await StorageService.resetApp();
+    setHasCompletedOnboarding(false);
+    setIsAuthenticated(false);
+  };
+
   useEffect(() => {
     checkAppState();
   }, []);
@@ -71,6 +78,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     completeOnboarding,
     authenticate,
     logout,
+    resetApp,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
