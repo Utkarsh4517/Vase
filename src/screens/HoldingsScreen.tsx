@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View, Image } from 'react-native';
 import { StorageService } from '../utils/storage';
-import { getSplTokenHoldings, SplTokenHolding, getSolBalance } from '../services/solana';
+import { getSplTokenHoldings, SplTokenHolding, getSolBalance, getTokenMetadata } from '../services/solana';
 import { getTokenPrices, getSolPrice } from '../services/price';
 
 export default function HoldingsScreen() {
@@ -30,9 +30,10 @@ export default function HoldingsScreen() {
         ]);
         
         const mintAddresses = holdings.map(h => h.mint);
-        const [tokenPrices, currentSolPrice] = await Promise.all([
+        const [tokenPrices, currentSolPrice, metadataMap] = await Promise.all([
           getTokenPrices(mintAddresses),
           getSolPrice(),
+          getTokenMetadata(mintAddresses),
         ]);
         
         const holdingsWithPrices = holdings.map(holding => ({
@@ -41,6 +42,7 @@ export default function HoldingsScreen() {
           totalUsdValue: tokenPrices[holding.mint] 
             ? tokenPrices[holding.mint] * holding.amount 
             : undefined,
+          metadata: metadataMap[holding.mint]
         }));
         
         setTokens(holdingsWithPrices);
@@ -79,25 +81,32 @@ export default function HoldingsScreen() {
           {sol !== null && (
             <View
               key="native-sol"
-              className="mb-3 w-full rounded-lg border border-gray-200 bg-white p-4"
+              className=" w-full rounded-lg bg-white p-4"
             >
-              <View className="flex-row items-center justify-between">
-                <Text className="text-base font-semibold text-[#303030]">
-                  {sol.toLocaleString(undefined, { maximumFractionDigits: 6 })} SOL
-                </Text>
-                {solPrice && (
-                  <Text className="text-base font-semibold text-green-600">
-                    {formatUSD(sol * solPrice)}
+              <View className="flex-row items-center">
+                <View className="h-12 w-12 mr-4 rounded-full overflow-hidden bg-gray-100 items-center justify-center">
+                  <Image 
+                    source={{ uri: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png' }} 
+                    className="h-12 w-12 rounded-full" 
+                    style={{ resizeMode: 'cover' }}
+                  />
+                </View>
+                
+                <View className="flex-1">
+                  <Text className="text-lg font-bold text-[#303030]">SOL</Text>
+                  <Text className="text-sm text-gray-500">Solana</Text>
+                </View>
+                
+                <View className="items-end">
+                  <Text className="text-lg font-semibold text-[#303030]">
+                    {sol.toLocaleString(undefined, { maximumFractionDigits: 6 })}
                   </Text>
-                )}
-              </View>
-              <View className="flex-row items-center justify-between mt-1">
-                <Text className="text-xs text-gray-500">Native SOL balance</Text>
-                {solPrice && (
-                  <Text className="text-xs text-gray-500">
-                    {formatUSD(solPrice)} per SOL
-                  </Text>
-                )}
+                  {solPrice && (
+                    <Text className="text-base font-semibold text-green-600">
+                      {formatUSD(sol * solPrice)}
+                    </Text>
+                  )}
+                </View>
               </View>
             </View>
           )}
@@ -108,25 +117,42 @@ export default function HoldingsScreen() {
             tokens.map((t) => (
               <View
                 key={`${t.tokenAccount}-${t.mint}`}
-                className="mb-3 w-full rounded-lg border border-gray-200 bg-white p-4"
+                className="w-full rounded-lg bg-white p-4"
               >
-                <View className="flex-row items-center justify-between">
-                  <Text className="text-base font-semibold text-[#303030]">
-                    {t.amount.toLocaleString(undefined, { maximumFractionDigits: t.decimals })}
-                  </Text>
-                  {t.totalUsdValue && (
-                    <Text className="text-base font-semibold text-green-600">
-                      {formatUSD(t.totalUsdValue)}
+                <View className="flex-row items-center">
+                  <View className="h-12 w-12 mr-4 rounded-full overflow-hidden bg-gray-100 items-center justify-center">
+                    {t.metadata?.logoURI ? (
+                      <Image 
+                        source={{ uri: t.metadata.logoURI }} 
+                        className="h-12 w-12 rounded-full" 
+                        style={{ resizeMode: 'cover' }}
+                      />
+                    ) : (
+                      <Text className="text-gray-400 font-semibold text-xs">
+                        {(t.metadata?.symbol || 'UNK').slice(0, 3)}
+                      </Text>
+                    )}
+                  </View>
+                  
+                  <View className="flex-1">
+                    <Text className="text-lg font-bold text-[#303030]">
+                      {t.metadata?.symbol || 'UNK'}
                     </Text>
-                  )}
-                </View>
-                <View className="flex-row items-center justify-between mt-1">
-                  <Text className="text-xs text-gray-500">{short(t.mint)}</Text>
-                  {t.usdPrice && (
-                    <Text className="text-xs text-gray-500">
-                      {formatUSD(t.usdPrice)} each
+                    <Text className="text-sm text-gray-500" numberOfLines={1}>
+                      {t.metadata?.name || short(t.mint)}
                     </Text>
-                  )}
+                  </View>
+                  
+                  <View className="items-end">
+                    <Text className="text-md font-semibold text-[#303030]">
+                      {t.amount.toLocaleString(undefined, { maximumFractionDigits: t.decimals })}
+                    </Text>
+                    {t.totalUsdValue && (
+                      <Text className="text-base font-semibold text-green-600">
+                        {formatUSD(t.totalUsdValue)}
+                      </Text>
+                    )}
+                  </View>
                 </View>
               </View>
             ))
