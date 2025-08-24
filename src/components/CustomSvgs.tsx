@@ -284,4 +284,45 @@ function LockIcon ({ size = 64, color = "#AEAEAE" }: any){
   )
 }
 
-export  {VaseLogo, VaseDarkLogo, VaseBlueLogo, VaseWhiteLogo, EyeIcon, LockIcon, CardIcon,DownArrowIcon,PlusIcon }
+
+function UnlockedLockIcon ({ size = 64, color = "#AEAEAE" }: any){
+  return (
+    <Svg width={size} height={size} viewBox="0 0 100 100" fill="none">
+      <Rect
+        x="15"
+        y="40"
+        width="70"
+        height="50"
+        rx="12"
+        ry="12"
+        fill={color}
+        stroke={color}
+        strokeWidth="3"
+      />
+      
+      <Path
+        d="M25 40 V22 C25 12.1 32.1 5 42 5 L58 5 C67.9 5 75 12.1 75 22 V25"
+        fill="none"
+        stroke={color}
+        strokeWidth="10"
+        strokeLinecap="round"
+      />
+      <Circle
+        cx="50"
+        cy="60"
+        r="6"
+        fill="white"
+      />
+      <Rect
+        x="47"
+        y="63"
+        width="6"
+        height="12"
+        fill="white"
+      />
+    </Svg>
+  )
+}
+
+
+export  {VaseLogo, VaseDarkLogo, VaseBlueLogo, VaseWhiteLogo, EyeIcon, LockIcon, CardIcon,DownArrowIcon,PlusIcon , UnlockedLockIcon}

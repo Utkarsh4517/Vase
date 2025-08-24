@@ -1,20 +1,38 @@
 import React from 'react';
 import { Text, View } from 'react-native';
 import CircularProgressBar from './CircularProgressBar';
-import { LockIcon } from './CustomSvgs';
+import { LockIcon, UnlockedLockIcon } from './CustomSvgs';
 import { UserPreferences } from '../utils/storage';
 
 interface LockProgressCardProps {
   progress: number;
   userPreferences: UserPreferences | null;
   currentBalance: number;
+
 }
 
 const LockProgressCard = ({
   progress,
   userPreferences,
-  currentBalance
+  currentBalance,
 }: LockProgressCardProps) => {
+  
+  const isUnlocked = () => {
+    if (!userPreferences) return false;
+
+    if (userPreferences.unlockType === 'date' && userPreferences.unlockDate) {
+      const now = new Date();
+      const unlockDate = new Date(userPreferences.unlockDate);
+      const daysLeft = Math.ceil((unlockDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+      return daysLeft <= 0;
+    } else if (userPreferences.unlockType === 'amount' && userPreferences.unlockAmount) {
+      const remaining = userPreferences.unlockAmount - currentBalance;
+      return remaining <= 0;
+    }
+
+    return false;
+  };
+
   const getUnlockMessage = () => {
     if (!userPreferences) return '';
 
@@ -42,7 +60,11 @@ const LockProgressCard = ({
         strokeWidth={14} 
         progress={progress}
       >
-        <LockIcon size={120} color="#AEAEAE" />
+        {isUnlocked() ? (
+          <UnlockedLockIcon size={120} color="#4CAF50" />
+        ) : (
+          <LockIcon size={120} color="#AEAEAE" />
+        )}
       </CircularProgressBar>
       {userPreferences && (
         <Text className="text-[#666666] text-sm mt-10 text-center">

@@ -148,6 +148,7 @@ export default function HomeScreen() {
           progress={progress}
           userPreferences={userPreferences}
           currentBalance={currentBalance}
+         
         />
       </View>
     </ScrollView>
