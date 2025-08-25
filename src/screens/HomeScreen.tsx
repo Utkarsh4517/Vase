@@ -122,9 +122,9 @@ export default function HomeScreen() {
   };
 
   const handleUnlockPress = () => {
-    if(isWalletUnlocked()) {
+    // if(isWalletUnlocked()) {
       navigation.navigate('Withdraw');
-    }
+    // }
   };
 
   return (

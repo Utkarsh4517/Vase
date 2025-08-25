@@ -1,5 +1,7 @@
 import { Connection, PublicKey, LAMPORTS_PER_SOL, Transaction, SystemProgram, sendAndConfirmTransaction, Keypair } from '@solana/web3.js';
 import { HELIUS_MAINNET_RPC_URL } from '@env';
+import { createTransferInstruction, getAssociatedTokenAddress, getOrCreateAssociatedTokenAccount, TOKEN_PROGRAM_ID as SPL_TOKEN_PROGRAM_ID } from '@solana/spl-token';
+import { getTokenPrices, getSolPrice } from './price';
 
 const MAINNET_RPC = HELIUS_MAINNET_RPC_URL;
 export const connection = new Connection(MAINNET_RPC, 'confirmed');
@@ -100,6 +102,164 @@ export async function getTokenMetadata(mintAddresses: string[]): Promise<Record<
       metadata[mint] = { name: 'Unknown Token', symbol: 'UNK', verified: false };
     });
     return metadata;
+  }
+}
+
+export interface TransactionResult {
+  success: boolean;
+  signature?: string;
+  error?: string;
+}
+
+export async function sendSolTransaction(
+  fromKeypair: Keypair,
+  toAddress: string,
+  amount: number
+): Promise<TransactionResult> {
+  try {
+    const transaction = new Transaction();
+    const transferInstruction = SystemProgram.transfer({
+      fromPubkey: fromKeypair.publicKey,
+      toPubkey: new PublicKey(toAddress),
+      lamports: Math.floor(amount * LAMPORTS_PER_SOL),
+    });
+    
+    transaction.add(transferInstruction);
+    
+    const signature = await sendAndConfirmTransaction(
+      connection,
+      transaction,
+      [fromKeypair]
+    );
+    
+    return {
+      success: true,
+      signature,
+    };
+  } catch (error) {
+    console.error('Error sending SOL transaction:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error occurred',
+    };
+  }
+}
+
+export async function sendSplTokenTransaction(
+  fromKeypair: Keypair,
+  toAddress: string,
+  amount: number,
+  mint: string,
+  decimals: number
+): Promise<TransactionResult> {
+  try {
+    const mintPubkey = new PublicKey(mint);
+    const toPubkey = new PublicKey(toAddress);
+    
+    const fromTokenAccount = await getAssociatedTokenAddress(
+      mintPubkey,
+      fromKeypair.publicKey
+    );
+    
+    const toTokenAccount = await getOrCreateAssociatedTokenAccount(
+      connection,
+      fromKeypair,
+      mintPubkey,
+      toPubkey
+    );
+    
+    const transaction = new Transaction();
+    const transferInstruction = createTransferInstruction(
+      fromTokenAccount,
+      toTokenAccount.address,
+      fromKeypair.publicKey,
+      Math.floor(amount * Math.pow(10, decimals))
+    );
+    
+    transaction.add(transferInstruction);
+    
+    const signature = await sendAndConfirmTransaction(
+      connection,
+      transaction,
+      [fromKeypair]
+    );
+    
+    return {
+      success: true,
+      signature,
+    };
+  } catch (error) {
+    console.error('Error sending SPL token transaction:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error occurred',
+    };
+  }
+}
+
+export function isValidSolanaAddress(address: string): boolean {
+  try {
+    new PublicKey(address);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+export async function getWithdrawableTokens(publicKey: string): Promise<WithdrawableToken[]> {
+  try {
+    const [holdings, solBalance] = await Promise.all([
+      getSplTokenHoldings(publicKey),
+      getSolBalance(publicKey),
+    ]);
+    
+    const mintAddresses = holdings.map(h => h.mint);
+    const [tokenPrices, solPrice, metadataMap] = await Promise.all([
+      getTokenPrices(mintAddresses),
+      getSolPrice(),
+      getTokenMetadata(mintAddresses),
+    ]);
+    
+    const tokens: WithdrawableToken[] = [];
+    
+    if (solBalance > 0) {
+      tokens.push({
+        type: 'SOL',
+        mint: 'So11111111111111111111111111111111111111112', 
+        symbol: 'SOL',
+        name: 'Solana',
+        logoURI: 'https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png',
+        balance: solBalance,
+        decimals: 9,
+        usdPrice: solPrice || undefined,
+        totalUsdValue: solPrice ? solBalance * solPrice : undefined,
+      });
+    }
+    
+    holdings.forEach(holding => {
+      if (holding.amount > 0) {
+        const metadata = metadataMap[holding.mint];
+        const usdPrice = tokenPrices[holding.mint];
+        
+        tokens.push({
+          type: 'SPL',
+          mint: holding.mint,
+          symbol: metadata?.symbol || 'UNK',
+          name: metadata?.name || 'Unknown Token',
+          logoURI: metadata?.logoURI,
+          balance: holding.amount,
+          decimals: holding.decimals,
+          usdPrice,
+          totalUsdValue: usdPrice ? holding.amount * usdPrice : undefined,
+          tokenAccount: holding.tokenAccount,
+        });
+      }
+    });
+    
+    return tokens;
+  } catch (error) {
+    console.error('Error getting withdrawable tokens:', error);
+    return [];
   }
 }
 
