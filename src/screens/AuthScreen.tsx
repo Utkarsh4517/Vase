@@ -15,6 +15,7 @@ import { Keypair } from '@solana/web3.js';
 import { useAppContext } from '../contexts/AppContext';
 import { StorageService, type UserPreferences } from '../utils/storage';
 import { Buffer } from 'buffer';
+import NotificationService from '../services/notification';
 
 type UnlockType = 'date' | 'amount';
 
@@ -71,37 +72,58 @@ export default function AuthScreen() {
   };
 
   const handleCreateWallet = async () => {
-    if (!isValid() || isCreatingWallet) return;
+    if (!selectedUnlockType) {
+      Alert.alert('Error', 'Please select an unlock type');
+      return;
+    }
+
+    if (selectedUnlockType === 'amount' && (!unlockAmount || parseFloat(unlockAmount) <= 0)) {
+      Alert.alert('Error', 'Please enter a valid unlock amount');
+      return;
+    }
+
+    if (selectedUnlockType === 'date' && !unlockDate) {
+      Alert.alert('Error', 'Please select an unlock date');
+      return;
+    }
+
+    if (selectedUnlockType === 'date' && unlockDate && unlockDate <= new Date()) {
+      Alert.alert('Error', 'Please select a future date');
+      return;
+    }
 
     setIsCreatingWallet(true);
 
     try {
-      const preferences: UserPreferences = {
-        unlockType: selectedUnlockType!,
-        unlockDate,
-        unlockAmount: unlockAmount ? parseFloat(unlockAmount) : undefined,
-      };
-
-      console.log('User preferences:', preferences);
       const wallet = await createSolanaWallet();
       if (!wallet) {
-        Alert.alert('Error', 'Failed to create wallet. Please try again.');
+        Alert.alert('Error', 'Failed to create wallet');
         return;
       }
-      await StorageService.setUserPreferences(preferences);
+
       await StorageService.setWalletPublicKey(wallet.publicKey);
       await StorageService.setWalletPrivateKey(wallet.privateKey);
-      console.log('Wallet created successfully!');
-      console.log('Public Key:', wallet.publicKey);
-      console.log('Preferences stored successfully');
-      await new Promise<void>(resolve => setTimeout(resolve, 500));
-      authenticate();
+
+      const preferences: UserPreferences = {
+        unlockType: selectedUnlockType,
+        ...(selectedUnlockType === 'amount' && { unlockAmount: parseFloat(unlockAmount) }),
+        ...(selectedUnlockType === 'date' && { unlockDate }),
+      };
+
+      await StorageService.setUserPreferences(preferences);
+      
+      try {
+        await NotificationService.scheduleGoalNotifications();
+        NotificationService.sendTestNotification();
+        console.log('Notifications scheduled for new user');
+      } catch (error) {
+        console.error('Error scheduling notifications:', error);
+      }
+
+      await authenticate();
     } catch (error) {
-      console.error('Error in wallet creation process:', error);
-      Alert.alert(
-        'Error',
-        'Failed to create and store wallet. Please try again.'
-      );
+      console.error('Error creating wallet:', error);
+      Alert.alert('Error', 'Failed to create wallet. Please try again.');
     } finally {
       setIsCreatingWallet(false);
     }

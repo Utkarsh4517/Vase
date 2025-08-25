@@ -7,6 +7,7 @@ import { MainTabParamList } from '../types/navigation';
 import BalanceCard from '../components/BalanceCard';
 import LockProgressCard from '../components/LockProgressCard';
 import { getPortfolioValue, PortfolioValue } from '../services/price';
+import NotificationService from '../services/notification';
 
 type HomeScreenNavigationProp = StackNavigationProp<MainTabParamList, 'Home'>;
 
@@ -34,6 +35,7 @@ export default function HomeScreen() {
   useEffect(() => {
     if (userPreferences) {
       calculateProgress();
+      scheduleNotifications();
     }
   }, [userPreferences, currentBalance]);
 
@@ -42,6 +44,14 @@ export default function HomeScreen() {
       loadPortfolioValue();
     }
   }, [publicKey]);
+
+  const scheduleNotifications = async () => {
+    try {
+      await NotificationService.scheduleGoalNotifications();
+    } catch (error) {
+      //TODO BABY
+    }
+  };
 
   const loadPortfolioValue = async () => {
     if (!publicKey) return;
